@@ -43,14 +43,15 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) Register(c *websocket.Conn) <-chan HubClient {
+func (h *Hub) Register(c *websocket.Conn) HubClient {
 	done := make(chan HubClient)
 
 	h.register <- RegisterHubClientEvent{
+		Conn:                   c,
 		ClientRegistrationDone: done,
 	}
 
-	return done
+	return <-done
 }
 
 func (h *Hub) Unregister(hubClient HubClient) {
@@ -61,16 +62,16 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case register := <-h.register:
-			if hubClient, err := h.addClient(register.Conn); err == nil {
-				register.ClientRegistrationDone <- hubClient
-			}
+			go h.handleRegisterHubClientEvent(&register)
 
 		case hubClient := <-h.unregister:
-			for k, v := range h.exist {
-				if v == hubClient {
-					delete(h.exist, k)
+			/*
+				for k, v := range h.exist {
+					if v == hubClient {
+						delete(h.exist, k)
+					}
 				}
-			}
+			*/
 
 			if _, ok := h.clients[hubClient.GetID()]; ok {
 				delete(h.clients, hubClient.GetID())
@@ -123,11 +124,8 @@ func (h *Hub) ProcessBroadcastMessages(c <-chan HubMessageBroadcastEvent) {
 	}
 }
 
-func (h *Hub) addClient(conn *websocket.Conn) (HubClient, error) {
-	client := NewHubClient(conn, h)
-
+func (h *Hub) handleRegisterHubClientEvent(register *RegisterHubClientEvent) {
+	client := NewHubClient(register.Conn, h)
 	h.clients[client.GetID()] = *client
-	h.exist[client.remoteAddr.String()] = *client
-
-	return *client, nil
+	register.ClientRegistrationDone <- *client
 }
