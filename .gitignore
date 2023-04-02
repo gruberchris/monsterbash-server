@@ -17,6 +17,8 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 .idea/workspace.xml
+.idea/usage.statistics.xml
+.idea/shelf
 
 # Go workspace file
 go.work
