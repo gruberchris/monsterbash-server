@@ -8,8 +8,8 @@ import (
 type MonsterBash struct {
 	ticker                  *time.Ticker
 	quitChannel             chan bool
-	sendMessageChannel      chan ws.HubMessageSendEvent
-	broadcastMessageChannel chan ws.HubMessageBroadcastEvent
+	sendMessageChannel      chan ws.HubSingleSendMessageEvent
+	broadcastMessageChannel chan ws.HubBroadcastMessageEvent
 	//TODO:
 }
 
@@ -18,8 +18,8 @@ func NewMonsterBash() *MonsterBash {
 		// TODO: Replace with a constant
 		ticker:                  time.NewTicker(1 * time.Second),
 		quitChannel:             make(chan bool),
-		sendMessageChannel:      make(chan ws.HubMessageSendEvent),
-		broadcastMessageChannel: make(chan ws.HubMessageBroadcastEvent),
+		sendMessageChannel:      make(chan ws.HubSingleSendMessageEvent),
+		broadcastMessageChannel: make(chan ws.HubBroadcastMessageEvent),
 	}
 }
 
@@ -40,7 +40,7 @@ func (mb *MonsterBash) Update() {
 	// TODO: Update the game state
 }
 
-func (mb *MonsterBash) ProcessInput(c <-chan ws.HubMessageReceiveEvent) {
+func (mb *MonsterBash) ProcessInput(c <-chan ws.HubReceiveMessageEvent) {
 	for m := range c {
 		switch m.Message.(type) {
 		// TODO:
@@ -65,11 +65,11 @@ func (mb *MonsterBash) GetQuitChannel() chan bool {
 	return mb.quitChannel
 }
 
-func (mb *MonsterBash) GetSendMessageChannel() chan ws.HubMessageSendEvent {
+func (mb *MonsterBash) GetSendMessageChannel() chan ws.HubSingleSendMessageEvent {
 	return mb.sendMessageChannel
 }
 
-func (mb *MonsterBash) GetBroadcastMessageChannel() chan ws.HubMessageBroadcastEvent {
+func (mb *MonsterBash) GetBroadcastMessageChannel() chan ws.HubBroadcastMessageEvent {
 	return mb.broadcastMessageChannel
 }
 
