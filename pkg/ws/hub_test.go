@@ -37,7 +37,7 @@ func TestHub_Unregister(t *testing.T) {
 
 	hub.Unregister(client)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(10 * time.Millisecond)
 
 	hub.clientsMu.RLock()
 
@@ -46,4 +46,49 @@ func TestHub_Unregister(t *testing.T) {
 	}
 
 	defer hub.clientsMu.RUnlock()
+}
+
+func TestHub_Receive(t *testing.T) {
+	hub := NewHub()
+
+	go hub.Run()
+
+	conn := &websocket.Conn{}
+	hub.Register(conn)
+
+	hub.Receive([]byte("test"))
+
+	time.Sleep(10 * time.Millisecond)
+
+	select {
+	case message := <-hub.messageReceive:
+		messageBytes := message.Message.([]byte)
+		if string(messageBytes) != "test" {
+			t.Errorf("Expected message to be 'test', got %v", message.Message)
+		}
+	default:
+		t.Errorf("Expected message to be received")
+	}
+}
+
+func TestHub_Send(t *testing.T) {
+	hub := NewHub()
+
+	go hub.Run()
+
+	conn := &websocket.Conn{}
+	client := hub.Register(conn)
+
+	hub.Send(client.ID, []byte("test"))
+
+	time.Sleep(10 * time.Millisecond)
+
+	select {
+	case message := <-client.send:
+		if string(message) != "test" {
+			t.Errorf("Expected message to be 'test', got %v", message)
+		}
+	default:
+		t.Errorf("Expected message to be received")
+	}
 }
