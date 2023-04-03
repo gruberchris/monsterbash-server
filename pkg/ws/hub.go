@@ -51,17 +51,7 @@ func (h *Hub) Run() {
 			go h.handleRegisterHubClientEvent(&register)
 
 		case hubClient := <-h.unregister:
-			for k, v := range h.exist {
-				if v == hubClient {
-					delete(h.exist, k)
-				}
-			}
-
-			if _, ok := h.clients[hubClient.ID]; ok {
-				delete(h.clients, hubClient.ID)
-			}
-
-			hubClient.Close()
+			go h.handleUnregisterClientEvent(&hubClient)
 
 		case message := <-h.singleSend:
 			go h.handleSingleSendMessageEvent(message)
