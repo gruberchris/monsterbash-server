@@ -4,26 +4,22 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"math/rand"
-	"net"
 )
 
 type HubClient struct {
-	hub  *Hub
-	conn *websocket.Conn
+	Hub  *Hub
+	Conn *websocket.Conn
+	ID   int32
 	send chan []byte
-	id   int32
-
-	// TODO: Need?
-	remoteAddr net.Addr
 }
 
 func NewHubClient(conn *websocket.Conn, hub *Hub) *HubClient {
 	return &HubClient{
-		hub:  hub,
-		conn: conn,
+		Hub:  hub,
+		Conn: conn,
 		// TODO: Set buffer size from constant
 		send: make(chan []byte, 1024),
-		id:   rand.Int31(),
+		ID:   rand.Int31(),
 	}
 }
 
@@ -39,18 +35,14 @@ func (c *HubClient) GetSendChannel() chan []byte {
 	return c.send
 }
 
-func (c *HubClient) GetID() int32 {
-	return c.id
-}
-
 func (c *HubClient) ReadPump() {
 	defer func() {
-		c.hub.Unregister(*c)
-		c.conn.Close()
+		c.Hub.Unregister(*c)
+		c.Conn.Close()
 	}()
 
 	for {
-		_, message, err := c.conn.ReadMessage()
+		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
@@ -58,24 +50,24 @@ func (c *HubClient) ReadPump() {
 			break
 		}
 
-		c.hub.Receive(message)
+		c.Hub.Receive(message)
 	}
 }
 
 func (c *HubClient) WritePump() {
 	defer func() {
-		c.conn.Close()
+		c.Conn.Close()
 	}()
 
 	for {
 		select {
 		case message, ok := <-c.send:
 			if !ok {
-				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 
-			w, err := c.conn.NextWriter(websocket.BinaryMessage)
+			w, err := c.Conn.NextWriter(websocket.BinaryMessage)
 			if err != nil {
 				return
 			}

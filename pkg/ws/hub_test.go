@@ -13,15 +13,15 @@ func TestHub_Register(t *testing.T) {
 	conn := &websocket.Conn{}
 	client := hub.Register(conn)
 
-	if client.GetID() == 0 {
-		t.Errorf("Expected client ID to be non-zero, got %d", client.GetID())
+	if client.ID == 0 {
+		t.Errorf("Expected client ID to be non-zero, got %d", client.ID)
 	}
 
-	if client.hub != hub {
-		t.Errorf("Expected client hub to be the same as the argument, got %v", client.hub)
+	if client.Hub != hub {
+		t.Errorf("Expected client hub to be the same as the argument, got %v", client.Hub)
 	}
 
-	if client.conn != conn {
-		t.Errorf("Expected client conn to be the same as the argument, got %v", client.conn)
+	if client.Conn != conn {
+		t.Errorf("Expected client conn to be the same as the argument, got %v", client.Conn)
 	}
 }

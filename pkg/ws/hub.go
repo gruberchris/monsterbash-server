@@ -65,16 +65,14 @@ func (h *Hub) Run() {
 			go h.handleRegisterHubClientEvent(&register)
 
 		case hubClient := <-h.unregister:
-			/*
-				for k, v := range h.exist {
-					if v == hubClient {
-						delete(h.exist, k)
-					}
+			for k, v := range h.exist {
+				if v == hubClient {
+					delete(h.exist, k)
 				}
-			*/
+			}
 
-			if _, ok := h.clients[hubClient.GetID()]; ok {
-				delete(h.clients, hubClient.GetID())
+			if _, ok := h.clients[hubClient.ID]; ok {
+				delete(h.clients, hubClient.ID)
 			}
 
 			hubClient.Close()
@@ -124,8 +122,17 @@ func (h *Hub) ProcessBroadcastMessages(c <-chan HubMessageBroadcastEvent) {
 	}
 }
 
+func findHubClientByRemoteAddress(h *Hub, addr string) (HubClient, bool) {
+	for _, client := range h.clients {
+		if client.Conn.RemoteAddr().String() == addr {
+			return client, true
+		}
+	}
+	return HubClient{}, false
+}
+
 func (h *Hub) handleRegisterHubClientEvent(register *RegisterHubClientEvent) {
 	client := NewHubClient(register.Conn, h)
-	h.clients[client.GetID()] = *client
+	h.clients[client.ID] = *client
 	register.ClientRegistrationDone <- *client
 }
