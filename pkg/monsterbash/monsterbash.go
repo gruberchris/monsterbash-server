@@ -17,7 +17,6 @@ type MonsterBash struct {
 
 func NewMonsterBash() *MonsterBash {
 	return &MonsterBash{
-		// TODO: Replace with a constant
 		ticker:                  time.NewTicker(1 * time.Second),
 		quitChannel:             make(chan bool),
 		sendMessageChannel:      make(chan ws.HubSingleSendMessageEvent, BufferSize),

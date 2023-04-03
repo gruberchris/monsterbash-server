@@ -44,7 +44,7 @@ func (s *Server) Start() error {
 	return http.ListenAndServe(s.listenAddr, nil)
 }
 
-func (s *Server) handleHealthRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleHealthRoute(w http.ResponseWriter, _ *http.Request) {
 	responseData := map[string]bool{"ok": true}
 
 	if err := json.NewEncoder(w).Encode(responseData); err != nil {
@@ -53,7 +53,6 @@ func (s *Server) handleHealthRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleWsRoute(w http.ResponseWriter, r *http.Request) {
-	// TODO: set buffer sizes from constants
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  BufferSize,
 		WriteBufferSize: BufferSize,
