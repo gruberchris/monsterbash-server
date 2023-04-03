@@ -2,6 +2,7 @@ package ws
 
 import (
 	"github.com/gorilla/websocket"
+	"sync"
 )
 
 var BufferSize = 1024
@@ -25,7 +26,9 @@ type HubBroadcastMessageEvent struct {
 }
 
 type Hub struct {
+	clientsMu      sync.RWMutex
 	clients        map[int32]HubClient
+	existMu        sync.RWMutex
 	exist          map[string]HubClient
 	register       chan RegisterHubClientEvent
 	unregister     chan HubClient
@@ -124,19 +127,29 @@ func (h *Hub) ProcessBroadcastMessages(c <-chan HubBroadcastMessageEvent) {
 
 func (h *Hub) handleRegisterHubClientEvent(register *RegisterHubClientEvent) {
 	client := NewHubClient(register.Conn, h)
+
+	h.clientsMu.Lock()
 	h.clients[client.ID] = *client
+	defer h.clientsMu.Unlock()
+
 	register.ClientRegistrationDone <- *client
 }
 
 func (h *Hub) handleUnregisterClientEvent(c *HubClient) {
 	if _, ok := h.clients[c.ID]; ok {
+		h.clientsMu.Lock()
 		delete(h.clients, c.ID)
+		defer h.clientsMu.Unlock()
+
+		h.existMu.Lock()
 
 		for k, v := range h.exist {
 			if v == *c {
 				delete(h.exist, k)
 			}
 		}
+
+		defer h.existMu.Unlock()
 
 		c.Close()
 	}
