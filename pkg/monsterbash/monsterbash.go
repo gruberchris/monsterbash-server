@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+var BufferSize = 1024
+
 type MonsterBash struct {
 	ticker                  *time.Ticker
 	quitChannel             chan bool
@@ -18,8 +20,8 @@ func NewMonsterBash() *MonsterBash {
 		// TODO: Replace with a constant
 		ticker:                  time.NewTicker(1 * time.Second),
 		quitChannel:             make(chan bool),
-		sendMessageChannel:      make(chan ws.HubSingleSendMessageEvent),
-		broadcastMessageChannel: make(chan ws.HubBroadcastMessageEvent),
+		sendMessageChannel:      make(chan ws.HubSingleSendMessageEvent, BufferSize),
+		broadcastMessageChannel: make(chan ws.HubBroadcastMessageEvent, BufferSize),
 	}
 }
 
@@ -61,15 +63,15 @@ func (mb *MonsterBash) ProcessRegisteredPlayers(c <-chan ws.RegisterHubClientEve
 	}
 }
 
-func (mb *MonsterBash) GetQuitChannel() chan bool {
+func (mb *MonsterBash) GetQuitChannel() <-chan bool {
 	return mb.quitChannel
 }
 
-func (mb *MonsterBash) GetSendMessageChannel() chan ws.HubSingleSendMessageEvent {
+func (mb *MonsterBash) GetSendMessageChannel() <-chan ws.HubSingleSendMessageEvent {
 	return mb.sendMessageChannel
 }
 
-func (mb *MonsterBash) GetBroadcastMessageChannel() chan ws.HubBroadcastMessageEvent {
+func (mb *MonsterBash) GetBroadcastMessageChannel() <-chan ws.HubBroadcastMessageEvent {
 	return mb.broadcastMessageChannel
 }
 

@@ -4,6 +4,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var BufferSize = 1024
+
 type RegisterHubClientEvent struct {
 	Conn                   *websocket.Conn
 	ClientRegistrationDone chan HubClient
@@ -36,11 +38,11 @@ func NewHub() *Hub {
 	return &Hub{
 		clients:        make(map[int32]HubClient),
 		exist:          make(map[string]HubClient),
-		register:       make(chan RegisterHubClientEvent),
-		unregister:     make(chan HubClient),
-		messageReceive: make(chan HubReceiveMessageEvent),
-		singleSend:     make(chan HubSingleSendMessageEvent),
-		broadcast:      make(chan HubBroadcastMessageEvent),
+		register:       make(chan RegisterHubClientEvent, BufferSize),
+		unregister:     make(chan HubClient, BufferSize),
+		messageReceive: make(chan HubReceiveMessageEvent, BufferSize),
+		singleSend:     make(chan HubSingleSendMessageEvent, BufferSize),
+		broadcast:      make(chan HubBroadcastMessageEvent, BufferSize),
 	}
 }
 

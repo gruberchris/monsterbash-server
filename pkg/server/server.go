@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+var BufferSize = 1024
+
 type Server struct {
 	listenAddr string
 	hub        *ws.Hub
@@ -53,8 +55,8 @@ func (s *Server) handleHealthRoute(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleWsRoute(w http.ResponseWriter, r *http.Request) {
 	// TODO: set buffer sizes from constants
 	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
+		ReadBufferSize:  BufferSize,
+		WriteBufferSize: BufferSize,
 	}
 
 	// Upgrade initial GET request to a websocket
@@ -64,11 +66,6 @@ func (s *Server) handleWsRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.hub.Register(conn)
-
 	// Register the new client with the hub
-	// clientID := <-s.hub.Register(conn)
-
-	// Assign the client to the game
-	//s.game.NewPlayerConnect(clientID)
+	s.hub.Register(conn)
 }

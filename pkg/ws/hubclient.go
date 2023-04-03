@@ -17,8 +17,7 @@ func NewHubClient(conn *websocket.Conn, hub *Hub) *HubClient {
 	return &HubClient{
 		Hub:  hub,
 		Conn: conn,
-		// TODO: Set buffer size from constant
-		send: make(chan []byte, 1024),
+		send: make(chan []byte, BufferSize),
 		ID:   rand.Int31(),
 	}
 }
