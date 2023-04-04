@@ -2,7 +2,8 @@ BINARY_NAME=monsterbash-server
 
 build:
 	GOARCH=amd64 GOOS=linux go build -o ./bin/${BINARY_NAME}-linux main.go
-	GOARCH=amd64 GOOS=darwin go build -o ./bin/${BINARY_NAME}-darwin main.go
+	GOARCH=amd64 GOOS=darwin go build -o ./bin/${BINARY_NAME}-darwin-amd64 main.go
+	GOARCH=arm64 GOOS=darwin go build -o ./bin/${BINARY_NAME}-darwin-arm64 main.go
 	GOARCH=amd64 GOOS=windows go build -o ./bin/${BINARY_NAME}-windows.exe main.go
 	go build -o ./bin/${BINARY_NAME} main.go
 
@@ -12,7 +13,8 @@ run: build
 clean:
 	go clean
 	rm -f ./bin/${BINARY_NAME}-linux
-	rm -f ./bin/${BINARY_NAME}-darwin
+	rm -f ./bin/${BINARY_NAME}-darwin-amd64
+	rm -f ./bin/${BINARY_NAME}-darwin-arm64
 	rm -f ./bin/${BINARY_NAME}-windows.exe
 	rm -f ./bin/${BINARY_NAME}
 
