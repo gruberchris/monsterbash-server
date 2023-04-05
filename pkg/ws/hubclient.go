@@ -46,8 +46,11 @@ func (c *HubClient) ReadPump() {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
+			log.Printf("Client %d disconnected", c.ID)
 			break
 		}
+
+		log.Printf("From Client %d: %s", c.ID, message)
 
 		c.Hub.Receive(message)
 	}
@@ -72,6 +75,8 @@ func (c *HubClient) WritePump() {
 			}
 
 			w.Write(message)
+
+			log.Printf("To Client %d: %s", c.ID, message)
 
 			if err := w.Close(); err != nil {
 				return

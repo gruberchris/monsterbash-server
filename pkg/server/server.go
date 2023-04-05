@@ -33,7 +33,7 @@ func (s *Server) Start() error {
 	go s.game.Run()
 
 	// Game processing messages from the websocket hub
-	go s.game.ProcessRegisteredPlayers(s.hub.GetRegisterChannel())
+	go s.game.ProcessNewPlayers(s.hub.GetPlayerJoinGameChannel())
 	go s.game.ProcessUnregisteredPlayers(s.hub.GetUnregisterChannel())
 	go s.game.ProcessInput(s.hub.GetMessageReceiveChannel())
 
@@ -56,6 +56,19 @@ func (s *Server) handleWsRoute(w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  BufferSize,
 		WriteBufferSize: BufferSize,
+	}
+
+	// Allow requests from approved origins
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		// TODO: Move this to a config file
+		acceptedOrigins := []string{"http://localhost:3000"}
+		for _, origin := range acceptedOrigins {
+			if r.Header.Get("Origin") == origin {
+				return true
+			}
+		}
+
+		return false
 	}
 
 	// Upgrade initial GET request to a websocket

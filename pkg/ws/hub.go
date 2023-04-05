@@ -12,6 +12,10 @@ type RegisterHubClientEvent struct {
 	ClientRegistrationDone chan HubClient
 }
 
+type PlayerJoinGameEvent struct {
+	PlayerHubClient *HubClient
+}
+
 type HubReceiveMessageEvent struct {
 	Message interface{}
 }
@@ -31,6 +35,7 @@ type Hub struct {
 	existMu        sync.RWMutex
 	exist          map[string]HubClient
 	register       chan RegisterHubClientEvent
+	playerJoinGame chan PlayerJoinGameEvent
 	unregister     chan HubClient
 	messageReceive chan HubReceiveMessageEvent
 	singleSend     chan HubSingleSendMessageEvent
@@ -42,6 +47,7 @@ func NewHub() *Hub {
 		clients:        make(map[int32]HubClient),
 		exist:          make(map[string]HubClient),
 		register:       make(chan RegisterHubClientEvent, BufferSize),
+		playerJoinGame: make(chan PlayerJoinGameEvent, BufferSize),
 		unregister:     make(chan HubClient, BufferSize),
 		messageReceive: make(chan HubReceiveMessageEvent, BufferSize),
 		singleSend:     make(chan HubSingleSendMessageEvent, BufferSize),
@@ -105,8 +111,8 @@ func (h *Hub) GetMessageReceiveChannel() <-chan HubReceiveMessageEvent {
 	return h.messageReceive
 }
 
-func (h *Hub) GetRegisterChannel() <-chan RegisterHubClientEvent {
-	return h.register
+func (h *Hub) GetPlayerJoinGameChannel() <-chan PlayerJoinGameEvent {
+	return h.playerJoinGame
 }
 
 func (h *Hub) GetUnregisterChannel() <-chan HubClient {
@@ -131,6 +137,10 @@ func (h *Hub) handleRegisterHubClientEvent(register *RegisterHubClientEvent) {
 	h.clientsMu.Lock()
 	h.clients[client.ID] = *client
 	defer h.clientsMu.Unlock()
+
+	h.playerJoinGame <- PlayerJoinGameEvent{
+		PlayerHubClient: client,
+	}
 
 	register.ClientRegistrationDone <- *client
 }

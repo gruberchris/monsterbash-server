@@ -1,6 +1,7 @@
 package monsterbash
 
 import (
+	"log"
 	"monsterbash-server/pkg/ws"
 	"time"
 )
@@ -55,10 +56,10 @@ func (mb *MonsterBash) ProcessUnregisteredPlayers(c <-chan ws.HubClient) {
 	}
 }
 
-func (mb *MonsterBash) ProcessRegisteredPlayers(c <-chan ws.RegisterHubClientEvent) {
+func (mb *MonsterBash) ProcessNewPlayers(c <-chan ws.PlayerJoinGameEvent) {
 	for m := range c {
-		hubClient := <-m.ClientRegistrationDone
-		go mb.connectPlayer(&hubClient)
+		hubClient := m.PlayerHubClient
+		go mb.connectPlayer(hubClient)
 	}
 }
 
@@ -75,6 +76,7 @@ func (mb *MonsterBash) GetBroadcastMessageChannel() <-chan ws.HubBroadcastMessag
 }
 
 func (mb *MonsterBash) connectPlayer(client *ws.HubClient) {
+	log.Printf("New player %d joined", client.ID)
 	go client.WritePump()
 	go client.ReadPump()
 
