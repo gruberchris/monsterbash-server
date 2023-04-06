@@ -13,7 +13,6 @@ type MonsterBash struct {
 	quitChannel             chan bool
 	sendMessageChannel      chan ws.HubSingleSendMessageEvent
 	broadcastMessageChannel chan ws.HubBroadcastMessageEvent
-	//TODO:
 }
 
 func NewMonsterBash() *MonsterBash {
@@ -39,13 +38,13 @@ func (mb *MonsterBash) Run() {
 }
 
 func (mb *MonsterBash) Update() {
-	// TODO: Update the game state
+	// TODO: Update the game state. Loop through all arenas and update state in them
 }
 
 func (mb *MonsterBash) ProcessInput(c <-chan ws.HubReceiveMessageEvent) {
 	for m := range c {
 		switch m.Message.(type) {
-		// TODO:
+		// TODO: Handle game messages from the player
 		}
 	}
 }
@@ -77,19 +76,17 @@ func (mb *MonsterBash) GetBroadcastMessageChannel() <-chan ws.HubBroadcastMessag
 
 func (mb *MonsterBash) connectPlayer(client *ws.HubClient) {
 	log.Printf("New player %d joined", client.ID)
+
 	go client.WritePump()
 	go client.ReadPump()
 
-	// clientID := client.GetID()
-
-	// TODO: Add the player to the game
+	// TODO: Send player their list of available arenas
 }
 
 func (mb *MonsterBash) removePlayer(client ws.HubClient) {
 	// TODO: Remove the player from the game
 
-}
+	// TODO: Clean up any active arenas the player was in
 
-func (mb *MonsterBash) initPlayer(clientID int32, name string) {
-	// TODO: Initialize the player with name sent from the client
+	// TODO: Send player a message that they have been removed from the game
 }
