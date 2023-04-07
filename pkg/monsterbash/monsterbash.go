@@ -2,6 +2,7 @@ package monsterbash
 
 import (
 	"log"
+	"monsterbash-server/pkg/types"
 	"monsterbash-server/pkg/ws"
 	"time"
 )
@@ -9,6 +10,7 @@ import (
 var BufferSize = 1024
 
 type MonsterBash struct {
+	arenas                  map[int32]*types.Arena
 	ticker                  *time.Ticker
 	quitChannel             chan bool
 	sendMessageChannel      chan ws.HubSingleSendMessageEvent
@@ -17,6 +19,7 @@ type MonsterBash struct {
 
 func NewMonsterBash() *MonsterBash {
 	return &MonsterBash{
+		arenas:                  make(map[int32]*types.Arena),
 		ticker:                  time.NewTicker(1 * time.Second),
 		quitChannel:             make(chan bool),
 		sendMessageChannel:      make(chan ws.HubSingleSendMessageEvent, BufferSize),
@@ -28,17 +31,13 @@ func (mb *MonsterBash) Run() {
 	for {
 		select {
 		case <-mb.ticker.C:
-			mb.Update()
+			mb.handleStateUpdate()
 
 		case <-mb.quitChannel:
 			mb.ticker.Stop()
 			return
 		}
 	}
-}
-
-func (mb *MonsterBash) Update() {
-	// TODO: Update the game state. Loop through all arenas and update state in them
 }
 
 func (mb *MonsterBash) ProcessInput(c <-chan ws.HubReceiveMessageEvent) {
@@ -89,4 +88,11 @@ func (mb *MonsterBash) removePlayer(client ws.HubClient) {
 	// TODO: Clean up any active arenas the player was in
 
 	// TODO: Send player a message that they have been removed from the game
+}
+
+func (mb *MonsterBash) handleStateUpdate() {
+	for _, arena := range mb.arenas {
+		// TODO: Update the game state. Loop through all arenas and update state in them
+		go arena.Update()
+	}
 }
